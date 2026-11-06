@@ -1,5 +1,6 @@
 #include "matrix.hpp"
 #include "cblas.h"
+#include <stdexcept>
 
 Matrix::Matrix(std::size_t rows, std::size_t cols, std::vector<double> elements) :
     rows_(rows), cols_(cols), elements_(std::move(elements))

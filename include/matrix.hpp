@@ -1,6 +1,5 @@
 #include <vector>
 #include <iostream>
-#include <stdexcept>
 
 class Matrix {
     private:
