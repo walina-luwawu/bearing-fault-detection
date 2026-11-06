@@ -1,24 +1,28 @@
 #include "dataset.hpp"
+#include <algorithm>
+#include <random>
+#include <utility>
+#include <stdexcept>
 
 template <typename T>
-Dataset<T>::Dataset(const Matrix &features, const std::vector<T> &target) :
-    features_(features), target_(target) {}
+Dataset<T>::Dataset(const Matrix &features, const std::vector<T> &targets) :
+    features_(features), targets_(targets) {}
 
 template <typename T>
 Dataset<T>::Dataset(std::size_t numSamples, std::size_t numFeatures) :
     features_(Matrix(numSamples, numFeatures)),
-    target_(std::vector<T>(numSamples)) {}
+    targets_(std::vector<T>(numSamples)) {}
 
 template <typename T>
 Dataset<T>::Dataset(const Dataset<T>& original) :
     features_(Matrix(original.getFeatures())),
-    target_(original.getTarget()) {}
+    targets_(original.getTargets()) {}
 
 template <typename T>
 Dataset<T>& Dataset<T>::operator=(const Dataset<T> &other) {
     if (this != &other) {
         features_ = other.features_;
-        target_ = other.target_;
+        targets_ = other.targets_;
     }
 
     return *this;
@@ -30,8 +34,8 @@ void Dataset<T>::setFeatures(const Matrix &features) {
 }
 
 template <typename T>
-void Dataset<T>::setTarget(const std::vector<T> &target) {
-    target_ = target;
+void Dataset<T>::setTargets(const std::vector<T> &targets) {
+    targets_ = targets;
 }
 
 template <typename T>
@@ -40,8 +44,8 @@ const Matrix& Dataset<T>::getFeatures() const {
 }
 
 template <typename T>
-const std::vector<T>& Dataset<T>::getTarget() const {
-    return target_;
+const std::vector<T>& Dataset<T>::getTargets() const {
+    return targets_;
 }
 
 template <typename T>
@@ -75,50 +79,50 @@ std::tuple<Dataset<T>, Dataset<T>, Dataset<T>> Dataset<T>::split(
     }
 
     const std::vector<double> &totalFeats = workDataset.getFeatures().elements();
-    const std::vector<T> &totalTarget = workDataset.getTarget();
+    const std::vector<T> &totalTargets = workDataset.getTargets();
 
     std::size_t totalSamples = this->countSamples();
     std::size_t trainingEndSample = (totalSamples * trainingPct) / 100;
     std::size_t testEndSample = (totalSamples * (testPct + trainingPct)) / 100;
 
-    /* traininging Data */
-    std::vector<T> trainingTarget(
-        totalTarget.begin(),
-        totalTarget.begin() + trainingEndSample
+    /* training Data */
+    std::vector<T> trainingTargets(
+        totalTargets.begin(),
+        totalTargets.begin() + trainingEndSample
     );
     std::vector<double> trainingFeats(
         totalFeats.begin(),
         totalFeats.begin() + (trainingEndSample * this->countFeatures())
     );
     Dataset<T> training(
-        Matrix(trainingTarget.size(), this->countFeatures(), trainingFeats),
-        trainingTarget
+        Matrix(trainingTargets.size(), this->countFeatures(), trainingFeats),
+        trainingTargets
     );
     /* Test Data */
-    std::vector<T> testTarget(
-        totalTarget.begin() + trainingEndSample,
-        totalTarget.begin() + testEndSample
+    std::vector<T> testTargets(
+        totalTargets.begin() + trainingEndSample,
+        totalTargets.begin() + testEndSample
     );
     std::vector<double> testFeats(
         totalFeats.begin() + (trainingEndSample * this->countFeatures()),
         totalFeats.begin() + (testEndSample * this->countFeatures())
     );
     Dataset<T> test(
-        Matrix(testTarget.size(), this->countFeatures(), testFeats),
-        testTarget
+        Matrix(testTargets.size(), this->countFeatures(), testFeats),
+        testTargets
     );
     /* Validation Data */
-    std::vector<T> valTarget(
-        totalTarget.begin() + testEndSample,
-        totalTarget.end()
+    std::vector<T> valTargets(
+        totalTargets.begin() + testEndSample,
+        totalTargets.end()
     );
     std::vector<double> valFeats(
         totalFeats.begin() + (testEndSample * this->countFeatures()),
         totalFeats.end()
     );
     Dataset<T> validation(
-        Matrix(valTarget.size(), this->countFeatures(), valFeats),
-        valTarget
+        Matrix(valTargets.size(), this->countFeatures(), valFeats),
+        valTargets
     );
 
     return {training, test, validation};
@@ -133,13 +137,13 @@ void Dataset<T>::shuffle() {
     std::mt19937 engine(seed());
     std::shuffle(indices.begin(), indices.end(), engine);
 
-    std::vector<T> tempTarget(this->countSamples());
+    std::vector<T> tempTargets(this->countSamples());
 
     for (std::size_t i{0}; i < this->countSamples(); ++i) {
-        tempTarget[i] = this->target_[indices[i]];
+        tempTargets[i] = this->targets_[indices[i]];
     }
 
-    this->target_ = tempTarget;
+    this->targets_ = tempTargets;
 
     std::vector<double> shuffledFeats(features_.size());
     const std::vector<double> &origFeats = this->features_.elements();

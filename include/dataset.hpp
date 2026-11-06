@@ -1,14 +1,12 @@
 #include "matrix.hpp"
-#include <random>
+#include <cstdint>
 #include <vector>
-#include <utility>
-#include <stdexcept>
 
 template <typename T>
 class Dataset {
     private:
         Matrix features_;
-        std::vector<T> target_;
+        std::vector<T> targets_;
     public:
         Dataset(const Matrix &features, const std::vector<T> &targets);
         Dataset(std::size_t numSamples, std::size_t numFeatures);
@@ -17,10 +15,10 @@ class Dataset {
         Dataset<T>& operator=(const Dataset<T> &other);
 
         void setFeatures(const Matrix &features);
-        void setTarget(const std::vector<T> &target);
+        void setTargets(const std::vector<T> &targets);
 
         const Matrix& getFeatures() const;
-        const std::vector<T>& getTarget() const;
+        const std::vector<T>& getTargets() const;
         std::size_t countFeatures() const;
         std::size_t countSamples() const;
 
