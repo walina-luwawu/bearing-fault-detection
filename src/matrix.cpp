@@ -13,12 +13,12 @@ Matrix::Matrix(std::size_t rows, std::size_t cols, std::vector<double> elements)
 Matrix::Matrix(std::size_t rows, std::size_t cols) :
     rows_(rows), cols_(cols), elements_(rows*cols, 0.0) {}
     
-Matrix::Matrix(const Matrix &other) :
+Matrix::Matrix(const Matrix& other) :
     rows_(other.rows()),
     cols_(other.cols()),
     elements_(other.elements_) {}
 
-Matrix& Matrix::operator=(const Matrix &other) {
+Matrix& Matrix::operator=(const Matrix& other) {
     if (this != &other) {
         this->rows_ = other.rows();
         this->cols_ = other.cols();
@@ -28,15 +28,15 @@ Matrix& Matrix::operator=(const Matrix &other) {
     return *this;
 }
 
-Matrix Matrix::operator+(const Matrix &other) const {
+Matrix Matrix::operator+(const Matrix& other) const {
     return this->add(other);
 }
 
-Matrix Matrix::operator-(const Matrix &other) const {
+Matrix Matrix::operator-(const Matrix& other) const {
     return this->subtract(other);
 }
 
-Matrix Matrix::operator*(const Matrix &other) const {
+Matrix Matrix::operator*(const Matrix& other) const {
     return this->multiply(other);
 }
 
@@ -46,21 +46,21 @@ Matrix Matrix::operator*(double scalar) const {
     return result;
 }
 
-std::vector<double> Matrix::operator*(const std::vector<double> &x) const {
+std::vector<double> Matrix::operator*(const std::vector<double>& x) const {
     return this->multiply(x);
 }
 
-Matrix& Matrix::operator+=(const Matrix &other) {
+Matrix& Matrix::operator+=(const Matrix& other) {
     *this = *this + other;
     return *this;
 }
 
-Matrix& Matrix::operator-=(const Matrix &other) {
+Matrix& Matrix::operator-=(const Matrix& other) {
     *this = *this - other;
     return *this;
 }
 
-Matrix& Matrix::operator*=(const Matrix &other) {
+Matrix& Matrix::operator*=(const Matrix& other) {
     *this = *this * other;
     return *this;
 }
@@ -93,7 +93,7 @@ double Matrix::elementAt(const std::size_t row, const std::size_t col) const {
     return this->elements_.at((this->cols() * row) + col);
 }
 
-void Matrix::setElements(const std::vector<double> &elements) {
+void Matrix::setElements(const std::vector<double>& elements) {
     if (elements.size() != this->size()) {
         throw std::invalid_argument("Number of elements must match matrix size");
     }
@@ -110,7 +110,7 @@ void Matrix::setDimensions(const std::size_t rows, const std::size_t cols) {
     this->cols_ = cols;
  }
 
-std::vector<double> Matrix::multiply(const std::vector<double> &x) const {
+std::vector<double> Matrix::multiply(const std::vector<double>& x) const {
     if (x.size() != cols()) {
         throw std::invalid_argument("Vector must be length n to multiply by mxn matrix");
     }
@@ -136,7 +136,7 @@ std::vector<double> Matrix::multiply(const std::vector<double> &x) const {
     return result;
 }
 
-Matrix Matrix::multiply(const Matrix &other) const {
+Matrix Matrix::multiply(const Matrix& other) const {
     if (other.rows() != this->cols()) {
         throw std::invalid_argument("Matrix inner dimensions must match for multiplication");
     }
@@ -163,7 +163,7 @@ Matrix Matrix::multiply(const Matrix &other) const {
     return result;
 }
 
-Matrix Matrix::add(const Matrix &other) const {
+Matrix Matrix::add(const Matrix& other) const {
     if (this->rows() != other.rows() || this->cols() != other.cols()) {
         throw std::invalid_argument("Matrix dimensions must match for addition");
     }
@@ -181,7 +181,7 @@ Matrix Matrix::add(const Matrix &other) const {
     return result;
 }
 
-Matrix Matrix::subtract(const Matrix &other) const {
+Matrix Matrix::subtract(const Matrix& other) const {
     if (this->rows() != other.rows() || this->cols() != other.cols()) {
         throw std::invalid_argument("Matrix dimensions must match for subtraction");
     }
@@ -240,7 +240,7 @@ std::vector<double> operator*(
     return result;
 }
 
-Matrix operator*(double scalar, const Matrix &A) {
+Matrix operator*(double scalar, const Matrix& A) {
     Matrix result = A;
     result.scale(scalar);
     return result;

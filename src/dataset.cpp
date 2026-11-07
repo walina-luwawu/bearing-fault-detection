@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 template <typename T>
-Dataset<T>::Dataset(const Matrix &features, const std::vector<T> &targets) :
+Dataset<T>::Dataset(const Matrix& features, const std::vector<T>& targets) :
     features_(features), targets_(targets) {}
 
 template <typename T>
@@ -19,7 +19,7 @@ Dataset<T>::Dataset(const Dataset<T>& original) :
     targets_(original.getTargets()) {}
 
 template <typename T>
-Dataset<T>& Dataset<T>::operator=(const Dataset<T> &other) {
+Dataset<T>& Dataset<T>::operator=(const Dataset<T>& other) {
     if (this != &other) {
         features_ = other.features_;
         targets_ = other.targets_;
@@ -29,12 +29,12 @@ Dataset<T>& Dataset<T>::operator=(const Dataset<T> &other) {
 }
 
 template <typename T>
-void Dataset<T>::setFeatures(const Matrix &features) {
+void Dataset<T>::setFeatures(const Matrix& features) {
     features_ = features;
 }
 
 template <typename T>
-void Dataset<T>::setTargets(const std::vector<T> &targets) {
+void Dataset<T>::setTargets(const std::vector<T>& targets) {
     targets_ = targets;
 }
 
@@ -78,8 +78,8 @@ std::tuple<Dataset<T>, Dataset<T>, Dataset<T>> Dataset<T>::split(
         workDataset.shuffle();
     }
 
-    const std::vector<double> &totalFeats = workDataset.getFeatures().elements();
-    const std::vector<T> &totalTargets = workDataset.getTargets();
+    const std::vector<double>& totalFeats = workDataset.getFeatures().elements();
+    const std::vector<T>& totalTargets = workDataset.getTargets();
 
     std::size_t totalSamples = this->countSamples();
     std::size_t trainingEndSample = (totalSamples * trainingPct) / 100;

@@ -8,14 +8,14 @@ class Dataset {
         Matrix features_;
         std::vector<T> targets_;
     public:
-        Dataset(const Matrix &features, const std::vector<T> &targets);
+        Dataset(const Matrix& features, const std::vector<T>& targets);
         Dataset(std::size_t numSamples, std::size_t numFeatures);
-        Dataset(const Dataset<T> &original);
+        Dataset(const Dataset<T>& original);
         
-        Dataset<T>& operator=(const Dataset<T> &other);
+        Dataset<T>& operator=(const Dataset<T>& other);
 
-        void setFeatures(const Matrix &features);
-        void setTargets(const std::vector<T> &targets);
+        void setFeatures(const Matrix& features);
+        void setTargets(const std::vector<T>& targets);
 
         const Matrix& getFeatures() const;
         const std::vector<T>& getTargets() const;
