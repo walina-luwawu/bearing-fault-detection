@@ -1,3 +1,6 @@
+#ifndef DATASET_HPP
+#define DATASET_HPP
+
 #include "matrix.hpp"
 #include <cstdint>
 #include <vector>
@@ -7,6 +10,9 @@ class Dataset {
     private:
         Matrix features_;
         std::vector<T> targets_;
+        std::vector<std::size_t> enumTargets_;
+
+        void setEnumTargets();
     public:
         Dataset(const Matrix& features, const std::vector<T>& targets);
         Dataset(std::size_t numSamples, std::size_t numFeatures);
@@ -19,6 +25,7 @@ class Dataset {
 
         const Matrix& getFeatures() const;
         const std::vector<T>& getTargets() const;
+        const std::vector<std::size_t>& getEnumTargets() const;
         std::size_t countFeatures() const;
         std::size_t countSamples() const;
 
@@ -29,3 +36,5 @@ class Dataset {
         ) const;
         void shuffle();
 };
+
+#endif

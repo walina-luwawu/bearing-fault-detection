@@ -1,12 +1,30 @@
 #include "dataset.hpp"
+
 #include <algorithm>
 #include <random>
-#include <utility>
 #include <stdexcept>
+#include <unordered_map>
+#include <utility>
 
 template <typename T>
 Dataset<T>::Dataset(const Matrix& features, const std::vector<T>& targets) :
-    features_(features), targets_(targets) {}
+    features_(features), targets_(targets) {
+    enumTargets_ = std::vector<std::size_t>(targets.size());
+
+    std::size_t id{0};
+    std::unordered_map<T, std::size_t> valToId;
+
+    for (std::size_t i{0}; i < targets.size(); ++i) {
+        auto [iter, inserted] = valToId.insert({targets[i], id});
+        
+        if (inserted) {
+            enumTargets_[i] = id;
+            ++id;
+        } else {
+            enumTargets_[i] = iter->second;
+        }
+    }
+}
 
 template <typename T>
 Dataset<T>::Dataset(std::size_t numSamples, std::size_t numFeatures) :
@@ -16,13 +34,15 @@ Dataset<T>::Dataset(std::size_t numSamples, std::size_t numFeatures) :
 template <typename T>
 Dataset<T>::Dataset(const Dataset<T>& original) :
     features_(Matrix(original.getFeatures())),
-    targets_(original.getTargets()) {}
+    targets_(original.getTargets()),
+    enumTargets_(original.getEnumTargets()) {}
 
 template <typename T>
 Dataset<T>& Dataset<T>::operator=(const Dataset<T>& other) {
     if (this != &other) {
-        features_ = other.features_;
-        targets_ = other.targets_;
+        this->features_ = other.features_;
+        this->targets_ = other.targets_;
+        this->enumTargets_ = other.enumTargets_;
     }
 
     return *this;
@@ -30,32 +50,59 @@ Dataset<T>& Dataset<T>::operator=(const Dataset<T>& other) {
 
 template <typename T>
 void Dataset<T>::setFeatures(const Matrix& features) {
-    features_ = features;
+    this->features_ = features;
 }
 
 template <typename T>
 void Dataset<T>::setTargets(const std::vector<T>& targets) {
-    targets_ = targets;
+    this->targets_ = targets;
+    setEnumTargets();
+}
+
+template <typename T>
+void Dataset<T>::setEnumTargets() {
+    this->enumTargets_ = std::vector<std::size_t>(this->getTargets().size());
+
+    std::size_t id{0};
+    std::unordered_map<T, std::size_t> valToId;
+
+    const std::vector<T>& targets = this->getTargets();
+
+    for (std::size_t i{0}; i < targets.size(); ++i) {
+        auto [iter, inserted] = valToId.insert({targets[i], id});
+        
+        if (inserted) {
+            this->enumTargets_[i] = id;
+            ++id;
+        } else {
+            this->enumTargets_[i] = iter->second;
+        }
+    }
 }
 
 template <typename T>
 const Matrix& Dataset<T>::getFeatures() const {
-    return features_;
+    return this->features_;
 }
 
 template <typename T>
 const std::vector<T>& Dataset<T>::getTargets() const {
-    return targets_;
+    return this->targets_;
+}
+
+template <typename T>
+const std::vector<std::size_t>& Dataset<T>::getEnumTargets() const {
+    return this->enumTargets_;
 }
 
 template <typename T>
 std::size_t Dataset<T>::countFeatures() const {
-    return features_.cols();
+    return this->features_.cols();
 }
 
 template <typename T>
 std::size_t Dataset<T>::countSamples() const {
-    return features_.rows();
+    return this->features_.rows();
 }
 
 template <typename T>
@@ -146,7 +193,7 @@ void Dataset<T>::shuffle() {
     this->targets_ = tempTargets;
 
     std::vector<double> shuffledFeats(features_.size());
-    const std::vector<double> &origFeats = this->features_.elements();
+    const std::vector<double>& origFeats = this->getFeatures().elements();
 
     for (std::size_t i{0}; i < this->countSamples(); ++i) {
         std::size_t srcStart = indices[i] * this->countFeatures();
