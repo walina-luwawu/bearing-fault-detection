@@ -8,21 +8,22 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(OpenBLAS CONFIG REQUIRED)
 
 add_library(
-    softFault
+    faultDetectionLite
     src/matrix.cpp
     src/dataset.cpp
     src/softmaxRegression.cpp
+    src/decisionTree.cpp
 )
 
 target_include_directories(
-    softFault
+    faultDetectionLite
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(
-    softFault
+    faultDetectionLite
     PUBLIC OpenBLAS::OpenBLAS
 )
 

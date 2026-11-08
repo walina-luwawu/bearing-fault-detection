@@ -8,7 +8,7 @@ add_executable(
 target_link_libraries(
     unitTests
     PRIVATE 
-    softFault
+    faultDetectionLite
     GTest::gtest
     GTest::gmock
     GTest::gmock_main
