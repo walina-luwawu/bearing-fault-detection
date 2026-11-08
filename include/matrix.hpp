@@ -1,3 +1,6 @@
+#ifndef MATRIX_HPP
+#define MATRIX_HPP
+
 #include <vector>
 #include <iostream>
 
@@ -45,3 +48,5 @@ class Matrix {
 Matrix operator*(double scalar, const Matrix& A);
 std::vector<double> operator*(const std::vector<double>& x, const Matrix& A);
 std::ostream& operator<<(std::ostream& os, const Matrix& matrix);
+
+#endif

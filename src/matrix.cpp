@@ -71,26 +71,26 @@ Matrix& Matrix::operator*=(double scalar) {
 }
 
 std::size_t Matrix::rows() const {
-    return rows_;
+    return this->rows_;
 }
 
 std::size_t Matrix::cols() const {
-    return cols_;
+    return this->cols_;
 }
 
 std::size_t Matrix::size() const {
-    return elements_.size();
+    return this->elements_.size();
 }
 
 const std::vector<double>& Matrix::elements() const {
-    return elements_;
+    return this->elements_;
 }
 
 double Matrix::elementAt(const std::size_t row, const std::size_t col) const {
     if (row >= this->rows() || col >= this->cols()) {
         throw std::out_of_range("Row/Col is out of range of matrix");
     }
-    return this->elements_.at((this->cols() * row) + col);
+    return this->elements().at((this->cols() * row) + col);
 }
 
 void Matrix::setElements(const std::vector<double>& elements) {
