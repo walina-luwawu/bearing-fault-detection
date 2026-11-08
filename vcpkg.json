@@ -1,0 +1,6 @@
+{
+  "name": "bearing-fault-detection",
+  "dependencies": [
+    "openblas", "gtest"
+  ]
+}
