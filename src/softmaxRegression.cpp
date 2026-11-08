@@ -4,6 +4,7 @@
 #include <cmath>
 #include <execution>
 #include <stdexcept>
+#include <unordered_set>
 
 template <typename T>
 SoftmaxRegression<T>::SoftmaxRegression(
@@ -199,8 +200,8 @@ template <typename T>
 double SoftmaxRegression<T>::validate(
     std::function<double(const std::vector<T>&, const Matrix&)> lossFunction,
     const Dataset<T>& validationData) const {
-    std::size_t numSamples = validationData.countSamples();
-    std::size_t numFeatures = validationData.countFeatures();
+    std::size_t numSamples{validationData.countSamples()};
+    std::size_t numFeatures{validationData.countFeatures()};
 
     if (numSamples == 0 || numFeatures == 0) {
         throw std::invalid_argument("Cannot validate with empty dataset");
@@ -219,8 +220,8 @@ double SoftmaxRegression<T>::test(
     std::function<double(const std::vector<T>&, const Matrix&)> lossFunction,
     const Dataset<T>& testData) const {
     
-    std::size_t numSamples = testData.countSamples();
-    std::size_t numFeatures = testData.countFeatures();
+    std::size_t numSamples{testData.countSamples()};
+    std::size_t numFeatures{testData.countFeatures()};
 
     if (numSamples == 0 || numFeatures == 0) {
         throw std::invalid_argument("Cannot test with empty dataset");
@@ -235,6 +236,120 @@ double SoftmaxRegression<T>::test(
 }
 
 template <typename T>
+Matrix SoftmaxRegression<T>::getConfusionMatrix(const Dataset<T>& dataset) const {
+    const std::vector<T>& targets = dataset.getTargets();
+    if (targets.empty()) {
+        return Matrix(0, 0);
+    }
+
+    std::vector<T> predictions = this->predictClass(dataset.getFeatures());
+
+    std::unordered_set<T> uniqueClassesSet;
+    for (const auto& t : targets) {
+        uniqueClassesSet.insert(t);
+    }
+    for (const auto& p : predictions) {
+        uniqueClassesSet.insert(p);
+    }
+
+    std::vector<T> uniqueClasses(uniqueClassesSet.begin(), uniqueClassesSet.end());
+    std::sort(uniqueClasses.begin(), uniqueClasses.end());
+
+    std::size_t numClasses{uniqueClasses.size()};
+
+    std::unordered_map<T, std::size_t> classToIndex;
+    for (std::size_t i{0}; i < numClasses; ++i) {
+        classToIndex[uniqueClasses[i]] = i;
+    }
+
+    Matrix confMatrix(numClasses, numClasses);
+
+    std::vector<double> counts(numClasses * numClasses, 0.0);
+
+    for (std::size_t i{0}; i < targets.size(); ++i) {
+        std::size_t trueIndex{classToIndex[targets[i]]};
+        std::size_t predIndex{classToIndex[predictions[i]]};
+
+        counts[trueIndex * numClasses + predIndex] += 1.0;
+    }
+
+    confMatrix.setElements(counts);
+    return confMatrix;
+}
+
+template <typename T>
+std::unordered_map<T, typename SoftmaxRegression<T>::ClassMetrics> SoftmaxRegression<T>::getClassMetrics(
+    const Dataset<T>& dataset) const {
+    const std::vector<T>& targets = dataset.getTargets();
+    if (targets.empty()) {
+        return {};
+    }
+
+    std::vector<T> predictions = this->predictClass(dataset.getFeatures());
+
+    std::unordered_set<T> uniqueClassesSet;
+    for (const auto& t : targets) {
+        uniqueClassesSet.insert(t);
+    }
+    for (const auto& p : predictions) {
+        uniqueClassesSet.insert(p);
+    }
+    
+    std::vector<T> uniqueClasses(uniqueClassesSet.begin(), uniqueClassesSet.end());
+    std::sort(uniqueClasses.begin(), uniqueClasses.end());
+
+    std::size_t numClasses = uniqueClasses.size();
+    std::unordered_map<T, std::size_t> classToIndex;
+    for (std::size_t i{0}; i < numClasses; ++i) {
+        classToIndex[uniqueClasses[i]] = i;
+    }
+
+    Matrix confMat = this->getConfusionMatrix(dataset);
+
+    std::unordered_map<T, typename SoftmaxRegression<T>::ClassMetrics> metricsMap;
+
+    for (std::size_t i{0}; i < numClasses; ++i) {
+        T uniqueClass = uniqueClasses[i];
+        
+        double truePositives{confMat.elementAt(i, i)};
+        
+        double falsePositives{0.0};
+        for (std::size_t r{0}; r < numClasses; ++r) {
+            if (r != i) {
+                falsePositives += confMat.elementAt(r, i);
+            }
+        }
+
+        double falseNegatives{0.0};
+        for (std::size_t c{0}; c < numClasses; ++c) {
+            if (c != i) {
+                falseNegatives += confMat.elementAt(i, c);
+            }
+        }
+
+        double precision{0.0};
+        double recall{0.0};
+        double f1{0.0};
+
+        if (truePositives + falsePositives > 0.0) {
+            precision = truePositives / (truePositives + falsePositives);
+        }
+
+        if (truePositives + falseNegatives > 0.0) {
+            recall = truePositives / (truePositives + falseNegatives);
+        }
+
+        if (precision + recall > 0.0) {
+            f1 = 2.0 * precision * recall / (precision + recall);
+        }
+
+        metricsMap[uniqueClass] = {precision, recall, f1};
+    }
+
+    return metricsMap;
+}
+
+template <typename T>
 double SoftmaxRegression<T>::categoricalCrossEntropyLoss(
     const std::vector<std::size_t>& enumTargets,
     const std::vector<double>& predictedProbabilities) {
@@ -243,7 +358,7 @@ double SoftmaxRegression<T>::categoricalCrossEntropyLoss(
     }
 
     double sumLoss{0.0};
-    const double epsilon = 1e-15;
+    const double epsilon{1e-15};
 
     for (std::size_t i{0}; i < enumTargets.size(); ++i) {
         std::size_t offset{i * this->getNumClasses()};
@@ -267,7 +382,7 @@ std::vector<double> SoftmaxRegression<T>::softmax(
         return {};
     }
 
-    double maxScore = scores[0];
+    double maxScore{scores[0]};
 
     for (double score : scores) {
         if (score > maxScore) {

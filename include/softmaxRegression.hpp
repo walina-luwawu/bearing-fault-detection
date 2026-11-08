@@ -3,6 +3,7 @@
 
 #include "dataset.hpp"
 #include <functional>
+#include <unordered_map>
 #include <vector>
 
 template <typename T>
@@ -17,6 +18,11 @@ class SoftmaxRegression {
         std::vector<double> softmax(const std::vector<double>& scores) const;
 
     public:
+        struct ClassMetrics {
+            double precision;
+            double recall;
+            double f1Score;
+        };
         SoftmaxRegression(double learningRate, unsigned int epochs, std::size_t numClasses);
 
         double getLearningRate() const;
@@ -40,6 +46,10 @@ class SoftmaxRegression {
         double test(
             std::function<double(const std::vector<T>&, const Matrix&)> lossFunction,
             const Dataset<T>& testData) const;
+
+        Matrix getConfusionMatrix(const Dataset<T>& dataset) const;
+
+        std::unordered_map<T, ClassMetrics> getClassMetrics(const Dataset<T>& dataset) const;
 
         double categoricalCrossEntropyLoss(
             const std::vector<std::size_t>& enumTargets,
